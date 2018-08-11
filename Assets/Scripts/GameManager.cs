@@ -4,24 +4,14 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
-    public enum State
+    public GameState gameState;
+    public GameObject characterPrefab;
+
+    public void OnLandedOnMattress(Character character)
     {
-        Start,
-        GamePlaying,
-        GameOver,
-
-    }
-    public State state = State.GamePlaying;
-
-    // Use this for initialization
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
+        if (gameState.mainState == GameState.MainState.GamePlaying)
+        {
+            character.Destroy();
+        }
     }
 }
