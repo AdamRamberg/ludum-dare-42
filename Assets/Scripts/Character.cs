@@ -13,7 +13,8 @@ public class Character : MonoBehaviour
         PreJumping,
         Jumping,
 
-        Falling
+        Falling,
+        Landed
     };
 
     public State state = State.Running;
@@ -28,6 +29,8 @@ public class Character : MonoBehaviour
 
     public FloatVariable maxAngularVelocity;
     public FloatVariable torquesWhenFalling;
+    public FloatVariable preJumpTime;
+    public Transform floor;
 
     private Rigidbody2D rb;
 
@@ -80,7 +83,7 @@ public class Character : MonoBehaviour
 
     IEnumerator PreJump()
     {
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(preJumpTime.Value);
         state = State.Jumping;
     }
 
@@ -135,6 +138,19 @@ public class Character : MonoBehaviour
         {
             jumpingTriggerTransform = null;
             state = State.Falling;
+        }
+    }
+
+    public float GetDistanceToFloor()
+    {
+        return transform.position.y - floor.position.y;
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Floor" && state == State.Falling)
+        {
+            state = State.Landed;
         }
     }
 }
