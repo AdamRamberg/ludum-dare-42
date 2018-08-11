@@ -19,10 +19,15 @@ public class Character : MonoBehaviour
 
     public State state = State.Running;
     private KeyCode lastKey = KeyCode.None;
+    public GameManager gameManager;
 
     private float runSpeed = 100f;
 
     private const string JUMPING_TRIGGER = "JumpingTrigger";
+    private const string MATTRESS = "Matress";
+    private const string FLOOR = "Floor";
+    private const string POLE = "Pole";
+
     private Transform jumpingTriggerTransform;
     private Vector2 velocityWhenJumping;
     private float percentJumpAreaReached;
@@ -33,6 +38,7 @@ public class Character : MonoBehaviour
     public Transform floor;
 
     private Rigidbody2D rb;
+
 
     void Start()
     {
@@ -148,9 +154,31 @@ public class Character : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Floor" && state == State.Falling)
+        if ((collision.gameObject.tag == FLOOR || collision.gameObject.tag == MATTRESS) && state == State.Falling)
         {
             state = State.Landed;
+
+            if (collision.gameObject.tag == MATTRESS)
+            {
+                StartCoroutine(LandedOnMattress());
+            }
+            else if (collision.gameObject.tag == FLOOR)
+            {
+
+            }
         }
+    }
+
+    IEnumerator LandedOnMattress()
+    {
+        yield return new WaitForSeconds(1f);
+        gameManager.OnLandedOnMattress(this);
+    }
+
+    public void Destroy()
+    {
+        var pole = transform.Find(POLE);
+        pole.transform.parent = null;
+        Destroy(gameObject);
     }
 }

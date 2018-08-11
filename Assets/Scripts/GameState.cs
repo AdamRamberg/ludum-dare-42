@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameState : MonoBehaviour {
+public class GameState : ScriptableObject
+{
+    public enum MainState
+    {
+        Start,
+        GamePlaying,
+        GameOver,
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    }
+    public MainState mainState = MainState.GamePlaying;
 }
