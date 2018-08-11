@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using ScriptableObjectVariables;
 
 public class Character : MonoBehaviour
 {
@@ -25,35 +26,55 @@ public class Character : MonoBehaviour
     private Vector2 velocityWhenJumping;
     private float percentJumpAreaReached;
 
+    public FloatVariable maxAngularVelocity;
+    public FloatVariable torquesWhenFalling;
+
+    private Rigidbody2D rb;
+
     void Start()
     {
-
+        rb = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
+        rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
+
         if (state == State.Running)
         {
             if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
             {
-                GetComponent<Rigidbody2D>().AddForce(Vector2.right * runSpeed);
+                rb.AddForce(Vector2.right * runSpeed);
                 lastKey = KeyCode.LeftArrow;
             }
             else if ((lastKey == KeyCode.None || lastKey == KeyCode.LeftArrow) && Input.GetKeyDown(KeyCode.RightArrow))
             {
-                GetComponent<Rigidbody2D>().AddForce(Vector2.right * runSpeed);
+                rb.AddForce(Vector2.right * runSpeed);
                 lastKey = KeyCode.RightArrow;
             }
         }
         else if (state == State.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
         {
             state = State.PreJumping;
-            velocityWhenJumping = GetComponent<Rigidbody2D>().velocity;
-            GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            GetComponent<Rigidbody2D>().AddForce(new Vector2(0.25f, 0.65f) * 1500f);
+            velocityWhenJumping = rb.velocity;
+            rb.velocity = Vector2.zero;
+            rb.AddForce(new Vector2(0.25f, 0.65f) * 1500f);
             StartCoroutine(PreJump());
 
             percentJumpAreaReached = (transform.position.x - (jumpingTriggerTransform.position.x - jumpingTriggerTransform.localScale.x / 2)) / jumpingTriggerTransform.localScale.x;
+        }
+        else if (state == State.Falling)
+        {
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                rb.AddTorque(torquesWhenFalling.Value);
+                rb.AddForce(-Vector2.right * 2f);
+            }
+            else if (Input.GetKey(KeyCode.RightArrow))
+            {
+                rb.AddTorque(-torquesWhenFalling.Value);
+                rb.AddForce(Vector2.right * 2f);
+            }
         }
     }
 
@@ -63,8 +84,22 @@ public class Character : MonoBehaviour
         state = State.Jumping;
     }
 
+    void ClampAngularVelocity()
+    {
+        if (rb.angularVelocity > maxAngularVelocity.Value)
+        {
+            rb.angularVelocity = maxAngularVelocity.Value;
+        }
+        else if (rb.angularVelocity < -maxAngularVelocity.Value)
+        {
+            rb.angularVelocity = -maxAngularVelocity.Value;
+        }
+    }
+
     void FixedUpdate()
     {
+        ClampAngularVelocity();
+
         if (state == State.Jumping)
         {
             // if between 0 and 0.6 => linear percent between 1 and 0.05
@@ -76,10 +111,10 @@ public class Character : MonoBehaviour
                 (1 - ((percentJumpAreaReached - 0.6f) / 0.4f)) * 0.1f - 0.05f
             ;
 
-            var velocity = GetComponent<Rigidbody2D>().velocity;
+            var velocity = rb.velocity;
             velocity.y = velocityWhenJumping.x * 1.4f;
             velocity.x = velocityWhenJumping.x * yVeloMultiplier * 0.5f;
-            GetComponent<Rigidbody2D>().velocity = velocity;
+            rb.velocity = velocity;
             state = State.Falling;
         }
     }
