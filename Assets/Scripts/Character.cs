@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using ScriptableObjectVariables;
 
 public class Character : MonoBehaviour
@@ -14,17 +15,17 @@ public class Character : MonoBehaviour
         Jumping,
 
         Falling,
-        Landed
+        Landed,
+        Dead
     };
 
     public State state = State.Running;
     private KeyCode lastKey = KeyCode.None;
-    public GameManager gameManager;
 
     private float runSpeed = 100f;
 
     private const string JUMPING_TRIGGER = "JumpingTrigger";
-    private const string MATTRESS = "Matress";
+    private const string MATTRESS = "Mattress";
     private const string FLOOR = "Floor";
     private const string POLE = "Pole";
 
@@ -39,10 +40,19 @@ public class Character : MonoBehaviour
 
     private Rigidbody2D rb;
 
+    public GameObject polePrefab;
+    public UnityEvent didDie;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Reset()
+    {
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.identity;
+        state = State.Running;
     }
 
     void Update()
@@ -136,6 +146,11 @@ public class Character : MonoBehaviour
             jumpingTriggerTransform = collider.transform;
             state = State.CanJump;
         }
+        else if (collider.tag == POLE && collider.transform.parent == null)
+        {
+            state = State.Dead;
+            if (didDie != null) didDie.Invoke();
+        }
     }
 
     void OnTriggerExit2D(Collider2D collider)
@@ -156,15 +171,15 @@ public class Character : MonoBehaviour
     {
         if ((collision.gameObject.tag == FLOOR || collision.gameObject.tag == MATTRESS) && state == State.Falling)
         {
-            state = State.Landed;
-
             if (collision.gameObject.tag == MATTRESS)
             {
+                state = State.Landed;
                 StartCoroutine(LandedOnMattress());
             }
             else if (collision.gameObject.tag == FLOOR)
             {
-
+                state = State.Dead;
+                if (didDie != null) didDie.Invoke();
             }
         }
     }
@@ -172,13 +187,13 @@ public class Character : MonoBehaviour
     IEnumerator LandedOnMattress()
     {
         yield return new WaitForSeconds(1f);
-        gameManager.OnLandedOnMattress(this);
-    }
 
-    public void Destroy()
-    {
-        var pole = transform.Find(POLE);
-        pole.transform.parent = null;
-        Destroy(gameObject);
+        if (state == State.Landed)
+        {
+            var myPole = transform.Find(POLE);
+            Instantiate(polePrefab, myPole.position, myPole.rotation);
+
+            Reset();
+        }
     }
 }

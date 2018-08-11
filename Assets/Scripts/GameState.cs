@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[CreateAssetMenu(menuName = "Game State")]
 public class GameState : ScriptableObject
 {
     public enum MainState

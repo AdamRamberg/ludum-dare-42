@@ -13,5 +13,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DeveloperDescription: The velocity the character needs to reach for the camera to
     reach full zoom.
-  Value: 30
+  value: 30
   useAsConstant: 1

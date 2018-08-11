@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace ScriptableObjectVariables
 {
@@ -6,31 +8,54 @@ namespace ScriptableObjectVariables
     {
         [Multiline]
         public string DeveloperDescription = "";
-        
-        public T Value;
+
+        public T Value { get { return value; } set { SetValue(value); } }
+
+        [SerializeField]
+        private T value;
         public bool useAsConstant = true; // If true it is only possible to change the variable via the Inspector
+
+        readonly IEqualityComparer<T> equalityComparer = EqualityComparer<T>.Default;
+
+        private Action<T> changed;
+        public Action<T> Changed
+        {
+            get { return changed; }
+            set
+            {
+                changed = value;
+                if (value != null)
+                {
+                    value(this.value);
+                }
+            }
+        }
 
         public bool SetValue(T value)
         {
             if (useAsConstant) return false;
-            Value = value;
+
+            if (!equalityComparer.Equals(value, this.value))
+            {
+                this.value = value;
+                if (Changed != null) { Changed(value); }
+            }
+
             return true;
         }
 
-        public bool SetValue(ScriptableObjectVariable<T> value)
+        public bool SetValue(ScriptableObjectVariable<T> variable)
+        {
+            return SetValue(variable.Value);
+        }
+
+        public virtual bool ApplyChange(T amount)
         {
             if (useAsConstant) return false;
-            Value = value.Value;
             return true;
         }
-
-        public virtual bool ApplyChange(T amount) 
-        { 
-            if (useAsConstant) return false;
-            return true;
-        }
-        public virtual bool ApplyChange(ScriptableObjectVariable<T> amount) 
-        { 
+        public virtual bool ApplyChange(ScriptableObjectVariable<T> amount)
+        {
             if (useAsConstant) return false;
             return true;
         }

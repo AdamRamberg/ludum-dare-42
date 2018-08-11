@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Name: CharacterMaxAngularVelocity
   m_EditorClassIdentifier: 
   DeveloperDescription: 
-  Value: 200
+  value: 200
   useAsConstant: 1

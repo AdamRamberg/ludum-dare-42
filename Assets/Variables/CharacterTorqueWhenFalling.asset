@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Name: CharacterTorqueWhenFalling
   m_EditorClassIdentifier: 
   DeveloperDescription: 
-  Value: 10
+  value: 10
   useAsConstant: 1

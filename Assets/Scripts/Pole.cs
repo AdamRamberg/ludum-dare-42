@@ -12,6 +12,8 @@ public class Pole : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        if (transform.parent == null) return;
+
         lineRenderer = GetComponent<LineRenderer>();
         character = transform.parent.GetComponent<Character>();
 
@@ -22,6 +24,8 @@ public class Pole : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (transform.parent == null) return;
+
         if (character.state == Character.State.PreJumping)
         {
             var v = lineRenderer.GetPosition(1);
@@ -33,22 +37,4 @@ public class Pole : MonoBehaviour
             lineRenderer.SetPosition(1, originalLastLinePos);
         }
     }
-
-    // void UpdatePositions()
-    // {
-    //     int xOffset = -2;
-    //     for (int i = 0; i < linePositions.Length; ++i)
-    //     {
-    //         linePositions[i] = new Vector3(transform.position.x + xOffset, transform.position.y, 0f);
-    //         xOffset++;
-    //     }
-    // }
-
-    // void SetPositions()
-    // {
-    //     for (int i = 0; i < lineRenderer.positionCount; ++i)
-    //     {
-    //         lineRenderer.SetPosition(i, linePositions[i]);
-    //     }
-    // }
 }

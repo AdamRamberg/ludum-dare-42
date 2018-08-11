@@ -5,13 +5,12 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public GameState gameState;
-    public GameObject characterPrefab;
+    public UIManager uiManager;
 
-    public void OnLandedOnMattress(Character character)
+    public void CharacterDied()
     {
-        if (gameState.mainState == GameState.MainState.GamePlaying)
-        {
-            character.Destroy();
-        }
+        gameState.mainState = GameState.MainState.GameOver;
+        uiManager.SetState(GameState.MainState.GameOver.ToString());
     }
+
 }

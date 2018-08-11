@@ -214,6 +214,7 @@ MonoBehaviour:
   torquesWhenFalling: {fileID: 11400000, guid: 93729d883678e41f89b181d95b5628ad, type: 2}
   preJumpTime: {fileID: 11400000, guid: ccdac7b36750348bb89117872d2e1d7c, type: 2}
   floor: {fileID: 0}
+  polePrefab: {fileID: 1459677450727644, guid: 2f8aa138cb97840a9aab20aaa13b5272, type: 2}
 --- !u!120 &120790022873598280
 LineRenderer:
   m_ObjectHideFlags: 1
