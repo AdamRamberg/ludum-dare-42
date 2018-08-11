@@ -8,9 +8,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2da8c6c279dc943c094e872817b44168, type: 3}
-  m_Name: CameraSizeRange
+  m_Script: {fileID: 11500000, guid: a0d907a4e06b1464f9199a15e629ee90, type: 3}
+  m_Name: CharcterPreJumpTime
   m_EditorClassIdentifier: 
   DeveloperDescription: 
-  Value: {x: 12, y: 36}
+  Value: 0.3
   useAsConstant: 1
