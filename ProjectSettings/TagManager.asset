@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - JumpingTrigger
+  - Floor
+  - Mattress
+  - Pole
   layers:
   - Default
   - TransparentFX

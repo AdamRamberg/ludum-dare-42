@@ -13,7 +13,8 @@ public class Character : MonoBehaviour
         PreJumping,
         Jumping,
 
-        Falling
+        Falling,
+        Landed
     };
 
     public State state = State.Running;
@@ -143,5 +144,13 @@ public class Character : MonoBehaviour
     public float GetDistanceToFloor()
     {
         return transform.position.y - floor.position.y;
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.tag == "Floor" && state == State.Falling)
+        {
+            state = State.Landed;
+        }
     }
 }
