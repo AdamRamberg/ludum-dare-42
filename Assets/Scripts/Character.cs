@@ -23,6 +23,8 @@ public class Character : MonoBehaviour
 
     private Rigidbody2D rb;
     public ParticleSystem smoke;
+    public ParticleSystem blood;
+    private SpriteRenderer spriteRenderer;
 
     public State state = State.Running;
     private KeyCode lastKey = KeyCode.None;
@@ -48,10 +50,13 @@ public class Character : MonoBehaviour
 
     private Animator animator;
 
+    private const string SPRITE = "Sprite";
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponentInChildren<Animator>();
+        spriteRenderer = transform.Find(SPRITE).GetComponent<SpriteRenderer>();
     }
 
     void Update()
@@ -155,7 +160,8 @@ public class Character : MonoBehaviour
             jumpingTriggerTransform = collider.transform;
             state = State.CanJump;
         }
-        else if (collider.tag == TagConstants.POLE && collider.transform.parent == null)
+        else if ((collider.tag == TagConstants.POLE && collider.transform.parent == null)
+            || collider.tag == TagConstants.HINDER)
         {
             Die();
         }
@@ -198,6 +204,7 @@ public class Character : MonoBehaviour
 
     public void Reset()
     {
+        spriteRenderer.enabled = true;
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
         state = State.Idle;
@@ -232,6 +239,9 @@ public class Character : MonoBehaviour
 
     void Die()
     {
+        blood.Emit(300);
+        spriteRenderer.enabled = false;
+
         state = State.Dead;
         if (didDie != null) didDie.Invoke();
     }

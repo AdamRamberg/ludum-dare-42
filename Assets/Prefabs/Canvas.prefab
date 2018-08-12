@@ -769,11 +769,11 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'There are three basic elements to pole jumping: running, jumping and falling.
-
-
-    Rapidly alternate between left and right arrow to run, jump using space and rotate
-    the character while falling by using the left and right arrow.'
+  m_Text: "There are three basic elements to pole jumping: running, jumping and falling.\n\nRapidly
+    alternate between left and right arrow to run, jump using space and rotate the
+    character while falling by using the left and right arrow.\x03\x03\n\nYour pole
+    will remain on the mattress if you make a successfully jump. Blood will flow if
+    you land on a pole or outside the mattress. Good luck champ! "
 --- !u!114 &114136835617502386
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -2258,7 +2258,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -48, y: -48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224326239589766244
 RectTransform:
@@ -2654,7 +2654,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: -48, y: -48}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!224 &224772997119884810
 RectTransform:
