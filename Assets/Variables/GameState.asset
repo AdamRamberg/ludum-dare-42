@@ -8,7 +8,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6488b473d4ce54797b4a72d81216b883, type: 3}
+  m_Script: {fileID: 11500000, guid: 0788ba3d1f43342a78da52ab2dfbd608, type: 3}
   m_Name: GameState
   m_EditorClassIdentifier: 
-  mainState: 1
+  DeveloperDescription: 
+  value: PLAYING
+  useAsConstant: 1

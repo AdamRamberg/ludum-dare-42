@@ -8,6 +8,7 @@ TagManager:
   - Floor
   - Mattress
   - Pole
+  - Canvas
   layers:
   - Default
   - TransparentFX

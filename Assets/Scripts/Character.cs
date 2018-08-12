@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
@@ -19,6 +20,7 @@ public class Character : MonoBehaviour
         Dead
     };
 
+    private Rigidbody2D rb;
     public State state = State.Running;
     private KeyCode lastKey = KeyCode.None;
 
@@ -38,14 +40,129 @@ public class Character : MonoBehaviour
     public FloatVariable preJumpTime;
     public Transform floor;
 
-    private Rigidbody2D rb;
 
     public GameObject polePrefab;
     public UnityEvent didDie;
 
+    private List<Action> actionsNextFixedUpdate = new List<Action>();
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    void Update()
+    {
+        if (state == State.Running)
+        {
+            if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
+            {
+                actionsNextFixedUpdate.Add(AddRunSpeed);
+                lastKey = KeyCode.LeftArrow;
+            }
+            else if ((lastKey == KeyCode.None || lastKey == KeyCode.LeftArrow) && Input.GetKeyDown(KeyCode.RightArrow))
+            {
+                actionsNextFixedUpdate.Add(AddRunSpeed);
+                lastKey = KeyCode.RightArrow;
+            }
+        }
+        else if (state == State.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
+        {
+            state = State.PreJumping;
+            actionsNextFixedUpdate.Add(DoPreJump);
+            StartCoroutine(DelayAndJump());
+
+            percentJumpAreaReached = (transform.position.x - (jumpingTriggerTransform.position.x - jumpingTriggerTransform.localScale.x / 2)) / jumpingTriggerTransform.localScale.x;
+        }
+        else if (state == State.Falling)
+        {
+            if (Input.GetKey(KeyCode.LeftArrow))
+            {
+                actionsNextFixedUpdate.Add(AddTorqueNForceFallingLeft);
+            }
+            else if (Input.GetKey(KeyCode.RightArrow))
+            {
+                actionsNextFixedUpdate.Add(AddTorqueNForceFallingRight);
+            }
+        }
+    }
+
+    void FixedUpdate()
+    {
+        rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
+
+        for (int i = 0; i < actionsNextFixedUpdate.Count; ++i)
+        {
+            actionsNextFixedUpdate[i]();
+        }
+        actionsNextFixedUpdate.Clear();
+
+        ClampAngularVelocity();
+    }
+
+    void DoJump()
+    {
+        // if between 0 and 0.6 => linear percent between 1 and 0.05
+        // else if more than 0.6 => linear percent between 0.05 and -0.05
+        // #mathgenius #mensa
+        var yVeloMultiplier = percentJumpAreaReached <= 0.6f ?
+            (1 - (percentJumpAreaReached / 0.6f)) * 0.95f + 0.05f
+        :
+            (1 - ((percentJumpAreaReached - 0.6f) / 0.4f)) * 0.1f - 0.05f
+        ;
+
+        var velocity = rb.velocity;
+        velocity.y = velocityWhenJumping.x * 1.4f;
+        velocity.x = velocityWhenJumping.x * yVeloMultiplier * 0.5f;
+        rb.velocity = velocity;
+        state = State.Falling;
+    }
+    void AddRunSpeed() { rb.AddForce(Vector2.right * runSpeed); }
+    void AddTorqueNForceFallingLeft() { AddTorqueNForceFalling(KeyCode.LeftArrow); }
+    void AddTorqueNForceFallingRight() { AddTorqueNForceFalling(KeyCode.RightArrow); }
+    void AddTorqueNForceFalling(KeyCode keyCode)
+    {
+        var right = keyCode == KeyCode.RightArrow;
+        rb.AddTorque((right ? -1 : 1) * torquesWhenFalling.Value);
+        rb.AddForce((right ? 1 : -1) * Vector2.right * 2f);
+    }
+
+    void OnTriggerEnter2D(Collider2D collider)
+    {
+        if (collider.tag == JUMPING_TRIGGER)
+        {
+            jumpingTriggerTransform = collider.transform;
+            state = State.CanJump;
+        }
+        else if (collider.tag == POLE && collider.transform.parent == null)
+        {
+            Die();
+        }
+    }
+
+    void OnTriggerExit2D(Collider2D collider)
+    {
+        if (collider.tag == JUMPING_TRIGGER && state == State.Running)
+        {
+            jumpingTriggerTransform = null;
+            state = State.Falling;
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if ((collision.gameObject.tag == FLOOR || collision.gameObject.tag == MATTRESS) && state == State.Falling)
+        {
+            if (collision.gameObject.tag == MATTRESS)
+            {
+                state = State.Landed;
+                StartCoroutine(LandedOnMattress());
+            }
+            else if (collision.gameObject.tag == FLOOR)
+            {
+                Die();
+            }
+        }
     }
 
     void Reset()
@@ -55,52 +172,19 @@ public class Character : MonoBehaviour
         state = State.Running;
     }
 
-    void Update()
+    void DoPreJump()
     {
-        rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
-
-        if (state == State.Running)
-        {
-            if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                rb.AddForce(Vector2.right * runSpeed);
-                lastKey = KeyCode.LeftArrow;
-            }
-            else if ((lastKey == KeyCode.None || lastKey == KeyCode.LeftArrow) && Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                rb.AddForce(Vector2.right * runSpeed);
-                lastKey = KeyCode.RightArrow;
-            }
-        }
-        else if (state == State.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
-        {
-            state = State.PreJumping;
-            velocityWhenJumping = rb.velocity;
-            rb.velocity = Vector2.zero;
-            rb.AddForce(new Vector2(0.25f, 0.65f) * 1500f);
-            StartCoroutine(PreJump());
-
-            percentJumpAreaReached = (transform.position.x - (jumpingTriggerTransform.position.x - jumpingTriggerTransform.localScale.x / 2)) / jumpingTriggerTransform.localScale.x;
-        }
-        else if (state == State.Falling)
-        {
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                rb.AddTorque(torquesWhenFalling.Value);
-                rb.AddForce(-Vector2.right * 2f);
-            }
-            else if (Input.GetKey(KeyCode.RightArrow))
-            {
-                rb.AddTorque(-torquesWhenFalling.Value);
-                rb.AddForce(Vector2.right * 2f);
-            }
-        }
+        velocityWhenJumping = rb.velocity;
+        rb.velocity = Vector2.zero;
+        rb.AddForce(new Vector2(0.25f, 0.65f) * 1500f);
     }
 
-    IEnumerator PreJump()
+    IEnumerator DelayAndJump()
     {
         yield return new WaitForSeconds(preJumpTime.Value);
         state = State.Jumping;
+        actionsNextFixedUpdate.Add(DoJump);
+
     }
 
     void ClampAngularVelocity()
@@ -115,73 +199,10 @@ public class Character : MonoBehaviour
         }
     }
 
-    void FixedUpdate()
+    void Die()
     {
-        ClampAngularVelocity();
-
-        if (state == State.Jumping)
-        {
-            // if between 0 and 0.6 => linear percent between 1 and 0.05
-            // else if more than 0.6 => linear percent between 0.05 and -0.05
-            // #mathgenius #mensa
-            var yVeloMultiplier = percentJumpAreaReached <= 0.6f ?
-                (1 - (percentJumpAreaReached / 0.6f)) * 0.95f + 0.05f
-            :
-                (1 - ((percentJumpAreaReached - 0.6f) / 0.4f)) * 0.1f - 0.05f
-            ;
-
-            var velocity = rb.velocity;
-            velocity.y = velocityWhenJumping.x * 1.4f;
-            velocity.x = velocityWhenJumping.x * yVeloMultiplier * 0.5f;
-            rb.velocity = velocity;
-            state = State.Falling;
-        }
-    }
-
-
-    void OnTriggerEnter2D(Collider2D collider)
-    {
-        if (collider.tag == JUMPING_TRIGGER)
-        {
-            jumpingTriggerTransform = collider.transform;
-            state = State.CanJump;
-        }
-        else if (collider.tag == POLE && collider.transform.parent == null)
-        {
-            state = State.Dead;
-            if (didDie != null) didDie.Invoke();
-        }
-    }
-
-    void OnTriggerExit2D(Collider2D collider)
-    {
-        if (collider.tag == JUMPING_TRIGGER && state == State.Running)
-        {
-            jumpingTriggerTransform = null;
-            state = State.Falling;
-        }
-    }
-
-    public float GetDistanceToFloor()
-    {
-        return transform.position.y - floor.position.y;
-    }
-
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if ((collision.gameObject.tag == FLOOR || collision.gameObject.tag == MATTRESS) && state == State.Falling)
-        {
-            if (collision.gameObject.tag == MATTRESS)
-            {
-                state = State.Landed;
-                StartCoroutine(LandedOnMattress());
-            }
-            else if (collision.gameObject.tag == FLOOR)
-            {
-                state = State.Dead;
-                if (didDie != null) didDie.Invoke();
-            }
-        }
+        state = State.Dead;
+        if (didDie != null) didDie.Invoke();
     }
 
     IEnumerator LandedOnMattress()
@@ -195,5 +216,10 @@ public class Character : MonoBehaviour
 
             Reset();
         }
+    }
+
+    public float GetDistanceToFloor()
+    {
+        return transform.position.y - floor.position.y;
     }
 }
