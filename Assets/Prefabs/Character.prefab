@@ -209,12 +209,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0eace2c4fd1eb4f0aa6e1b9ae9b82282, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  smoke: {fileID: 198795249653033192, guid: 9b279e408d984e94583dc210b3b5eb5c, type: 2}
   state: 0
   maxAngularVelocity: {fileID: 11400000, guid: 6ae76d17365a84e0b9db72665b7ad0f7, type: 2}
   torquesWhenFalling: {fileID: 11400000, guid: 93729d883678e41f89b181d95b5628ad, type: 2}
   preJumpTime: {fileID: 11400000, guid: ccdac7b36750348bb89117872d2e1d7c, type: 2}
   floor: {fileID: 0}
   polePrefab: {fileID: 1459677450727644, guid: 2f8aa138cb97840a9aab20aaa13b5272, type: 2}
+  didDie:
+    m_PersistentCalls:
+      m_Calls: []
+    m_TypeName: UnityEngine.Events.UnityEvent, UnityEngine.CoreModule, Version=0.0.0.0,
+      Culture=neutral, PublicKeyToken=null
 --- !u!120 &120790022873598280
 LineRenderer:
   m_ObjectHideFlags: 1
@@ -339,8 +345,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1817822797
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: eb7a892c36f544bd79dd313f1fe8e9c8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}

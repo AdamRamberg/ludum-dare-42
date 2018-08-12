@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Name: CameraSizeRange
   m_EditorClassIdentifier: 
   DeveloperDescription: 
-  value: {x: 6, y: 12}
+  value: {x: 6, y: 18}
   useAsConstant: 1
