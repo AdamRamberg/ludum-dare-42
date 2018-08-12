@@ -12,7 +12,6 @@ public class ParallaxScript : MonoBehaviour
 		var parallaxPosition = Camera.main.transform.position * parallaxWeight;
 		var position = this.transform.position;
 		position.x = parallaxPosition.x;
-		// position.y = parallaxPosition.y;
 		this.transform.position = position;
 	}
 }
