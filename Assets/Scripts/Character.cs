@@ -55,7 +55,7 @@ public class Character : MonoBehaviour
 
     void Update()
     {
-        Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.05f);
+        Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.03f);
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
 
         if (state == State.Running)
