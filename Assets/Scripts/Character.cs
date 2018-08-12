@@ -10,6 +10,7 @@ public class Character : MonoBehaviour
 
     public enum State
     {
+        Idle,
         Running,
         CanJump,
         PreJumping,
@@ -45,17 +46,26 @@ public class Character : MonoBehaviour
 
     private List<Action> actionsNextFixedUpdate = new List<Action>();
 
+    private Animator animator;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponentInChildren<Animator>();
     }
 
     void Update()
     {
         if (gameState.Value != GameStateConstants.PLAYING) return;
 
+        animator.SetInteger("State", (int)state);
         Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.03f);
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
+
+        // For animation
+        if (state == State.Idle && Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)){
+            state = State.Running;
+        }
 
         if (state == State.Running)
         {
@@ -185,7 +195,7 @@ public class Character : MonoBehaviour
     {
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
-        state = State.Running;
+        state = State.Idle;
     }
 
     void DoPreJump()
