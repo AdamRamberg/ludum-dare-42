@@ -44,11 +44,35 @@ public class Character : MonoBehaviour
         animator = GetComponentInChildren<Animator>();
         spriteRenderer = transform.Find(SPRITE).GetComponent<SpriteRenderer>();
         Reset();
+        state.Changed += SetGameStateBasedOnCharState;
+        gameState.Changed += SetGameStateBasedOnCharState;
+    }
+
+    private void OnDestroy()
+    {
+        state.Changed -= SetGameStateBasedOnCharState;
+        gameState.Changed -= SetGameStateBasedOnCharState;
+    }
+
+    void SetGameStateBasedOnCharState(CharacterState charState) { SetGameStateBasedOnCharState(); }
+    void SetGameStateBasedOnCharState(string newGameState) { SetGameStateBasedOnCharState(); }
+    void SetGameStateBasedOnCharState()
+    {
+        if (!GameStateUtils.IsPlaying(gameState)) return;
+
+        if (state.Value == CharacterState.Idle)
+        {
+            gameState.Value = GameStateConstants.PLAYING_RUNNING;
+        }
+        else if (gameState.Value == GameStateConstants.PLAYING_RUNNING)
+        {
+            gameState.Value = GameStateConstants.PLAYING;
+        }
     }
 
     void Update()
     {
-        if (gameState.Value != GameStateConstants.PLAYING) return;
+        if (!GameStateUtils.IsPlaying(gameState)) return;
 
         animator.SetInteger("State", (int)state.Value);
         Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.03f);
@@ -98,7 +122,7 @@ public class Character : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (gameState.Value != GameStateConstants.PLAYING) return;
+        if (!GameStateUtils.IsPlaying(gameState)) return;
 
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
 
@@ -140,7 +164,7 @@ public class Character : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collider)
     {
-        if (gameState.Value != GameStateConstants.PLAYING) return;
+        if (!GameStateUtils.IsPlaying(gameState)) return;
 
         if (collider.tag == TagConstants.JUMPING_TRIGGER)
         {
@@ -156,7 +180,7 @@ public class Character : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D collider)
     {
-        if (gameState.Value != GameStateConstants.PLAYING) return;
+        if (!GameStateUtils.IsPlaying(gameState)) return;
 
         if (collider.tag == TagConstants.JUMPING_TRIGGER)
         {
@@ -171,7 +195,7 @@ public class Character : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (gameState.Value != GameStateConstants.PLAYING) return;
+        if (!GameStateUtils.IsPlaying(gameState)) return;
 
         if ((collision.gameObject.tag == TagConstants.FLOOR || collision.gameObject.tag == TagConstants.MATTRESS) && state.Value == CharacterState.Falling)
         {
