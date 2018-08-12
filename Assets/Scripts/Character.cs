@@ -21,6 +21,8 @@ public class Character : MonoBehaviour
     };
 
     private Rigidbody2D rb;
+    public ParticleSystem smoke;
+
     public State state = State.Running;
     private KeyCode lastKey = KeyCode.None;
 
@@ -53,17 +55,22 @@ public class Character : MonoBehaviour
 
     void Update()
     {
+        Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.05f);
+        rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
+
         if (state == State.Running)
         {
             if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
             {
                 actionsNextFixedUpdate.Add(AddRunSpeed);
                 lastKey = KeyCode.LeftArrow;
+                smoke.Play();
             }
             else if ((lastKey == KeyCode.None || lastKey == KeyCode.LeftArrow) && Input.GetKeyDown(KeyCode.RightArrow))
             {
                 actionsNextFixedUpdate.Add(AddRunSpeed);
                 lastKey = KeyCode.RightArrow;
+                smoke.Play();
             }
         }
         else if (state == State.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
@@ -153,6 +160,8 @@ public class Character : MonoBehaviour
     {
         if ((collision.gameObject.tag == FLOOR || collision.gameObject.tag == MATTRESS) && state == State.Falling)
         {
+            smoke.Play();
+            Camera.main.GetComponent<CameraShake>().Shake(0.3f);
             if (collision.gameObject.tag == MATTRESS)
             {
                 state = State.Landed;
