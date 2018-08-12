@@ -156,6 +156,7 @@ public class Character : MonoBehaviour
         }
         else if (collider.tag == TagConstants.POLE && collider.transform.parent == null)
         {
+            // START HERE...
             Die();
         }
     }
