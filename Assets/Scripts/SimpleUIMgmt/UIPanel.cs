@@ -4,5 +4,6 @@ using UnityEngine;
 
 public class UIPanel : MonoBehaviour
 {
+    public string panelName;
     public List<string> activeOnState;
 }

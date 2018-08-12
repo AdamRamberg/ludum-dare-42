@@ -1,14 +1,21 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Collections;
+using System.Linq;
 using System.Collections.Generic;
+using ScriptableObjectVariables;
 
 public class UIManager : MonoBehaviour
 {
 
-    public GameObject theCanvas;
+    public GameObject canvas;
 
-    private GameStateManager.GameState currentlyActiveUI;
+    public StringVariable uiState;
+    public string initialState;
+
+    private List<UIPanel> uiPanels = new List<UIPanel>();
+    private List<Func<Transform, bool>> uiPanelUntilChecks = new List<Func<Transform, bool>>();
     private Dictionary<string, Coroutine> coroutineDict = new Dictionary<string, Coroutine>();
 
     private const string CANVAS = "Canvas";
@@ -23,77 +30,71 @@ public class UIManager : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        uiPanels = FindObjectsOfType<UIPanel>().ToList();
+
+        for (int i = 0; i < uiPanels.Count; ++i)
+        {
+            uiPanelUntilChecks.Add((t) => IsUIPanel(t) && t.GetInstanceID() != uiPanels[i].transform.GetInstanceID());
+            coroutineDict.Add(uiPanels[i].panelName, null);
+        }
     }
 
     // Use this for initialization
     void Start()
     {
         // Try to find canvas by tag first
-        theCanvas = GameObject.FindGameObjectWithTag(CANVAS);
+        canvas = GameObject.FindGameObjectWithTag(CANVAS);
 
         // If not found, find canvas by name
-        if (theCanvas == null)
-            theCanvas = GameObject.Find(CANVAS);
+        if (canvas == null)
+            canvas = GameObject.Find(CANVAS);
 
-        // Add all game states to internal dictionary keeping track of coroutines per UI panel
-        foreach (GameStateManager.GameStateNameEntry e in GameStateManager.instance.gameStateNames)
-        {
-            coroutineDict.Add(e.name, null);
-        }
-
-        currentlyActiveUI = GameStateManager.instance.CurrentGameState.Value;
-        GameStateManager.instance.CurrentGameState.Changed += SwitchUI;
+        uiState.Value = initialState;
+        uiState.Changed += SwitchUI;
 
         InitUI();
     }
 
     private void OnDestroy()
     {
-        GameStateManager.instance.CurrentGameState.Changed -= SwitchUI;
+        uiState.Changed -= SwitchUI;
     }
 
-    private void SwitchUI(GameStateManager.GameState newState)
+    private void SwitchUI(string newState)
     {
-        SwitchUI(currentlyActiveUI, newState);
-        currentlyActiveUI = newState;
+        SwitchUI(uiState.PreviousValue, newState);
     }
 
-    private void SwitchUI(GameStateManager.GameState currentState, GameStateManager.GameState newState)
+    private void SwitchUI(string currentState, string newState)
     {
-        foreach (Transform trans in theCanvas.transform)
+        for (int i = 0; i < uiPanels.Count; ++i)
         {
-            if (trans.name == GameStateManager.instance.GetGameStateName(newState))
-            {
-                // Fade in all children
-                if (coroutineDict.ContainsKey(trans.name) && coroutineDict[trans.name] != null)
-                    StopCoroutine(coroutineDict[trans.name]);
-                var coroutine = StartCoroutine(FadeAlphaTransition(true, trans));
-                coroutineDict[trans.name] = coroutine;
-            }
-            else
-            {
-                if (coroutineDict.ContainsKey(trans.name) && coroutineDict[trans.name] != null)
-                    StopCoroutine(coroutineDict[trans.name]);
-                var coroutine = StartCoroutine(FadeAlphaTransition(false, trans));
-                coroutineDict[trans.name] = coroutine;
-            }
+            if (coroutineDict.ContainsKey(uiPanels[i].panelName) && coroutineDict[uiPanels[i].panelName] != null)
+                StopCoroutine(coroutineDict[uiPanels[i].panelName]);
+            coroutineDict[uiPanels[i].panelName] = StartCoroutine(FadeAlphaTransition(uiPanels[i].activeOnState.Contains(uiState.Value), uiPanels[i].transform, uiPanelUntilChecks[i]));
         }
+    }
+
+    private bool IsUIPanel(Transform trans)
+    {
+        return trans.GetComponent<UIComponent>() != null;
     }
 
     private void InitUI()
     {
-        foreach (Transform trans in theCanvas.transform)
+        for (int i = 0; i < uiPanels.Count; ++i)
         {
-            if (trans.name == GameStateManager.instance.GetGameStateName(GameStateManager.instance.CurrentGameState.Value))
+            if (uiPanels[i].activeOnState.Contains(uiState.Value))
             {
-                StartCoroutine(FadeAlphaTransition(true, trans));
+                StartCoroutine(FadeAlphaTransition(true, uiPanels[i].transform, uiPanelUntilChecks[i]));
             }
             else
             {
-                trans.TraverseAndExecute(MakeBtnNonInteractable);
-                trans.TraverseAndExecute(MakeImagesNotRaycastTarget);
-                trans.TraverseAndExecute(SetHiddenPos);
-                trans.TraverseAndExecute(InstantDecreaseAlpha);
+                uiPanels[i].transform.TraverseAndExecute(MakeBtnNonInteractable, uiPanelUntilChecks[i]);
+                uiPanels[i].transform.TraverseAndExecute(MakeImagesNotRaycastTarget, uiPanelUntilChecks[i]);
+                uiPanels[i].transform.TraverseAndExecute(SetHiddenPos, uiPanelUntilChecks[i]);
+                uiPanels[i].transform.TraverseAndExecute(InstantDecreaseAlpha, uiPanelUntilChecks[i]);
             }
         }
     }
@@ -240,57 +241,41 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    IEnumerator FadeAlphaTransition(bool fadeIn, Transform trans)
+    IEnumerator FadeAlphaTransition(bool fadeIn, Transform transform, Func<Transform, bool> executeUntil)
     {
         var transitionComplete = false;
 
         if (!fadeIn)
         {
-            trans.TraverseAndExecute(MakeBtnNonInteractable);
-            trans.TraverseAndExecute(MakeImagesNotRaycastTarget);
+            transform.TraverseAndExecute(MakeBtnNonInteractable, executeUntil);
+            transform.TraverseAndExecute(MakeImagesNotRaycastTarget, executeUntil);
         }
         else
         {
-            trans.TraverseAndExecute(SetInitPos);
+            transform.TraverseAndExecute(SetInitPos, executeUntil);
         }
 
         while (!transitionComplete)
         {
             if (fadeIn)
-                transitionComplete = trans.TraverseExecuteAndCheck(IncreaseAlpha);
+                transitionComplete = transform.TraverseExecuteAndCheck(IncreaseAlpha, executeUntil);
             else
-                transitionComplete = trans.TraverseExecuteAndCheck(DecreaseAlpha);
+                transitionComplete = transform.TraverseExecuteAndCheck(DecreaseAlpha, executeUntil);
 
             yield return null;
         }
 
         if (fadeIn)
         {
-            trans.TraverseAndExecute(MakeBtnInteractable);
-            trans.TraverseAndExecute(MakeImagesRaycastTarget);
+            transform.TraverseAndExecute(MakeBtnInteractable, executeUntil);
+            transform.TraverseAndExecute(MakeImagesRaycastTarget, executeUntil);
         }
         else
         {
-            trans.TraverseAndExecute(SetHiddenPos);
+            transform.TraverseAndExecute(SetHiddenPos, executeUntil);
         }
     }
 
     // Publicly available varibles, properties and methods
     public static UIManager instance = null; // Static ref
-
-    public void InstantlyHideUI(GameStateManager.GameState gameState)
-    {
-        foreach (Transform trans in theCanvas.transform)
-        {
-            if (trans.name == GameStateManager.instance.GetGameStateName(gameState))
-            {
-                trans.TraverseAndExecute(MakeBtnNonInteractable);
-                trans.TraverseAndExecute(MakeImagesNotRaycastTarget);
-                trans.TraverseAndExecute(InstantDecreaseAlpha);
-                trans.TraverseAndExecute(SetHiddenPos);
-
-                break;
-            }
-        }
-    }
 }

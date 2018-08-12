@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Name: GameState
   m_EditorClassIdentifier: 
   DeveloperDescription: 
-  value: PLAYING
-  useAsConstant: 1
+  value: Start
+  previousValue: 
+  defaultValue: Start
+  useAsConstant: 0
