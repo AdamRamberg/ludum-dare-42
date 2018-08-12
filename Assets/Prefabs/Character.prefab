@@ -313,7 +313,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   smoke: {fileID: 198641290707516246}
   blood: {fileID: 198919909835868560}
-  state: 0
+  state: {fileID: 11400000, guid: 34c7e275033dd4f378c776467ff2f8d1, type: 2}
   maxAngularVelocity: {fileID: 11400000, guid: 6ae76d17365a84e0b9db72665b7ad0f7, type: 2}
   torquesWhenFalling: {fileID: 11400000, guid: 93729d883678e41f89b181d95b5628ad, type: 2}
   preJumpTime: {fileID: 11400000, guid: ccdac7b36750348bb89117872d2e1d7c, type: 2}

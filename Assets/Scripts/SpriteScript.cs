@@ -13,7 +13,7 @@ public class SpriteScript : MonoBehaviour
 
     void Update()
     {
-        if (character.state == Character.State.PreJumping)
+        if (character.state.Value == CharacterState.PreJumping)
         {
             transform.Rotate(new Vector3(0f, 0f, 2f));
         }

@@ -7,26 +7,12 @@ using ScriptableObjectVariables;
 
 public class Character : MonoBehaviour
 {
-
-    public enum State
-    {
-        Idle,
-        Running,
-        CanJump,
-        PreJumping,
-        Jumping,
-
-        Falling,
-        Landed,
-        Dead
-    };
-
     private Rigidbody2D rb;
     public ParticleSystem smoke;
     public ParticleSystem blood;
     private SpriteRenderer spriteRenderer;
 
-    public State state = State.Running;
+    public CharacterStateVariable state;
     private KeyCode lastKey = KeyCode.None;
 
     private float runSpeed = 100f;
@@ -57,23 +43,24 @@ public class Character : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponentInChildren<Animator>();
         spriteRenderer = transform.Find(SPRITE).GetComponent<SpriteRenderer>();
+        Reset();
     }
 
     void Update()
     {
         if (gameState.Value != GameStateConstants.PLAYING) return;
 
-        animator.SetInteger("State", (int)state);
+        animator.SetInteger("State", (int)state.Value);
         Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.03f);
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
 
         // For animation
-        if (state == State.Idle && (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)))
+        if (state.Value == CharacterState.Idle && (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)))
         {
-            state = State.Running;
+            state.Value = CharacterState.Running;
         }
 
-        if (state == State.Running)
+        if (state.Value == CharacterState.Running)
         {
             if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
             {
@@ -88,15 +75,15 @@ public class Character : MonoBehaviour
                 smoke.Play();
             }
         }
-        else if (state == State.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
+        else if (state.Value == CharacterState.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
         {
-            state = State.PreJumping;
+            state.Value = CharacterState.PreJumping;
             actionsNextFixedUpdate.Add(DoPreJump);
             StartCoroutine(DelayAndJump());
 
             percentJumpAreaReached = (transform.position.x - (jumpingTriggerTransform.position.x - jumpingTriggerTransform.localScale.x / 2)) / jumpingTriggerTransform.localScale.x;
         }
-        else if (state == State.Falling)
+        else if (state.Value == CharacterState.Falling)
         {
             if (Input.GetKey(KeyCode.LeftArrow))
             {
@@ -139,7 +126,7 @@ public class Character : MonoBehaviour
         velocity.y = velocityWhenJumping.x * 1.4f;
         velocity.x = velocityWhenJumping.x * yVeloMultiplier * 0.5f;
         rb.velocity = velocity;
-        state = State.Falling;
+        state.Value = CharacterState.Falling;
     }
     void AddRunSpeed() { rb.AddForce(Vector2.right * runSpeed); }
     void AddTorqueNForceFallingLeft() { AddTorqueNForceFalling(KeyCode.LeftArrow); }
@@ -158,7 +145,7 @@ public class Character : MonoBehaviour
         if (collider.tag == TagConstants.JUMPING_TRIGGER)
         {
             jumpingTriggerTransform = collider.transform;
-            state = State.CanJump;
+            state.Value = CharacterState.CanJump;
         }
         else if ((collider.tag == TagConstants.POLE && collider.transform.parent == null)
             || collider.tag == TagConstants.HINDER)
@@ -175,7 +162,7 @@ public class Character : MonoBehaviour
         {
             jumpingTriggerTransform = null;
 
-            if (state == State.CanJump)
+            if (state.Value == CharacterState.CanJump)
             {
                 Die();
             }
@@ -186,13 +173,13 @@ public class Character : MonoBehaviour
     {
         if (gameState.Value != GameStateConstants.PLAYING) return;
 
-        if ((collision.gameObject.tag == TagConstants.FLOOR || collision.gameObject.tag == TagConstants.MATTRESS) && state == State.Falling)
+        if ((collision.gameObject.tag == TagConstants.FLOOR || collision.gameObject.tag == TagConstants.MATTRESS) && state.Value == CharacterState.Falling)
         {
             smoke.Play();
             Camera.main.GetComponent<CameraShake>().Shake(0.3f);
             if (collision.gameObject.tag == TagConstants.MATTRESS)
             {
-                state = State.Landed;
+                state.Value = CharacterState.Landed;
                 StartCoroutine(LandedOnMattress());
             }
             else if (collision.gameObject.tag == TagConstants.FLOOR)
@@ -207,7 +194,7 @@ public class Character : MonoBehaviour
         spriteRenderer.enabled = true;
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
-        state = State.Idle;
+        state.Value = CharacterState.Idle;
     }
 
     void DoPreJump()
@@ -220,7 +207,7 @@ public class Character : MonoBehaviour
     IEnumerator DelayAndJump()
     {
         yield return new WaitForSeconds(preJumpTime.Value);
-        state = State.Jumping;
+        state.Value = CharacterState.Jumping;
         actionsNextFixedUpdate.Add(DoJump);
 
     }
@@ -242,7 +229,7 @@ public class Character : MonoBehaviour
         blood.Emit(300);
         spriteRenderer.enabled = false;
 
-        state = State.Dead;
+        state.Value = CharacterState.Dead;
         if (didDie != null) didDie.Invoke();
     }
 
@@ -250,7 +237,7 @@ public class Character : MonoBehaviour
     {
         yield return new WaitForSeconds(1f);
 
-        if (state == State.Landed)
+        if (state.Value == CharacterState.Landed)
         {
             var myPole = transform.Find(TagConstants.POLE);
             Instantiate(polePrefab, new Vector3(myPole.position.x, myPole.position.y, -5f), myPole.rotation);
