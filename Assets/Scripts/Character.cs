@@ -63,7 +63,8 @@ public class Character : MonoBehaviour
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
 
         // For animation
-        if (state == State.Idle && Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)){
+        if (state == State.Idle && (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow)))
+        {
             state = State.Running;
         }
 
@@ -156,7 +157,6 @@ public class Character : MonoBehaviour
         }
         else if (collider.tag == TagConstants.POLE && collider.transform.parent == null)
         {
-            // START HERE...
             Die();
         }
     }
@@ -165,10 +165,14 @@ public class Character : MonoBehaviour
     {
         if (gameState.Value != GameStateConstants.PLAYING) return;
 
-        if (collider.tag == TagConstants.JUMPING_TRIGGER && state == State.Running)
+        if (collider.tag == TagConstants.JUMPING_TRIGGER)
         {
             jumpingTriggerTransform = null;
-            state = State.Falling;
+
+            if (state == State.CanJump)
+            {
+                Die();
+            }
         }
     }
 
@@ -239,7 +243,7 @@ public class Character : MonoBehaviour
         if (state == State.Landed)
         {
             var myPole = transform.Find(TagConstants.POLE);
-            Instantiate(polePrefab, myPole.position, myPole.rotation);
+            Instantiate(polePrefab, new Vector3(myPole.position.x, myPole.position.y, -5f), myPole.rotation);
 
             Reset();
         }
