@@ -28,11 +28,6 @@ public class Character : MonoBehaviour
 
     private float runSpeed = 100f;
 
-    private const string JUMPING_TRIGGER = "JumpingTrigger";
-    private const string MATTRESS = "Mattress";
-    private const string FLOOR = "Floor";
-    private const string POLE = "Pole";
-
     private Transform jumpingTriggerTransform;
     private Vector2 velocityWhenJumping;
     private float percentJumpAreaReached;
@@ -46,6 +41,8 @@ public class Character : MonoBehaviour
     public GameObject polePrefab;
     public UnityEvent didDie;
 
+    public StringVariable gameState;
+
     private List<Action> actionsNextFixedUpdate = new List<Action>();
 
     void Start()
@@ -55,6 +52,8 @@ public class Character : MonoBehaviour
 
     void Update()
     {
+        if (gameState.Value != GameStateConstants.PLAYING) return;
+
         Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.03f);
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
 
@@ -96,6 +95,8 @@ public class Character : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (gameState.Value != GameStateConstants.PLAYING) return;
+
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
 
         for (int i = 0; i < actionsNextFixedUpdate.Count; ++i)
@@ -136,12 +137,14 @@ public class Character : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collider)
     {
-        if (collider.tag == JUMPING_TRIGGER)
+        if (gameState.Value != GameStateConstants.PLAYING) return;
+
+        if (collider.tag == TagConstants.JUMPING_TRIGGER)
         {
             jumpingTriggerTransform = collider.transform;
             state = State.CanJump;
         }
-        else if (collider.tag == POLE && collider.transform.parent == null)
+        else if (collider.tag == TagConstants.POLE && collider.transform.parent == null)
         {
             Die();
         }
@@ -149,7 +152,9 @@ public class Character : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D collider)
     {
-        if (collider.tag == JUMPING_TRIGGER && state == State.Running)
+        if (gameState.Value != GameStateConstants.PLAYING) return;
+
+        if (collider.tag == TagConstants.JUMPING_TRIGGER && state == State.Running)
         {
             jumpingTriggerTransform = null;
             state = State.Falling;
@@ -158,23 +163,25 @@ public class Character : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if ((collision.gameObject.tag == FLOOR || collision.gameObject.tag == MATTRESS) && state == State.Falling)
+        if (gameState.Value != GameStateConstants.PLAYING) return;
+
+        if ((collision.gameObject.tag == TagConstants.FLOOR || collision.gameObject.tag == TagConstants.MATTRESS) && state == State.Falling)
         {
             smoke.Play();
             Camera.main.GetComponent<CameraShake>().Shake(0.3f);
-            if (collision.gameObject.tag == MATTRESS)
+            if (collision.gameObject.tag == TagConstants.MATTRESS)
             {
                 state = State.Landed;
                 StartCoroutine(LandedOnMattress());
             }
-            else if (collision.gameObject.tag == FLOOR)
+            else if (collision.gameObject.tag == TagConstants.FLOOR)
             {
                 Die();
             }
         }
     }
 
-    void Reset()
+    public void Reset()
     {
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
@@ -220,7 +227,7 @@ public class Character : MonoBehaviour
 
         if (state == State.Landed)
         {
-            var myPole = transform.Find(POLE);
+            var myPole = transform.Find(TagConstants.POLE);
             Instantiate(polePrefab, myPole.position, myPole.rotation);
 
             Reset();
