@@ -8,17 +8,21 @@ public class ScoreManager : ScriptableObject
 {
     public int timesLanded = 0;
     public float totalScore = 0f;
+    public float jumpScore = 0f;
+    public int jumpMultiplier = 1;
     public Action DidReset;
 
-    public void AddWhenInAir(float deltaTime)
+    public Action DidResetJumpScore;
+
+    public void AddWhenFalling(float deltaTime)
     {
-        totalScore += deltaTime * 100f;
+        jumpScore += deltaTime * 100f;
     }
 
     public void DidLandOnMattress()
     {
         timesLanded++;
-        totalScore += (timesLanded * 1000f);
+        jumpScore += (timesLanded * 1000f);
     }
 
     public void AddToTotalScore(float value)
@@ -26,20 +30,39 @@ public class ScoreManager : ScriptableObject
         totalScore += value;
     }
 
-    // public void SetMultipler(float multiplier)
-    // {
-    //     this.multiplier = multiplier;
-    // }
+    public void AddJumpScoreToTotal()
+    {
+        totalScore += jumpScore * jumpMultiplier;
+        ResetJumpScore();
+    }
 
     public void Reset()
     {
         totalScore = 0f;
         timesLanded = 0;
+        ResetJumpScore();
         if (DidReset != null) DidReset.Invoke();
+    }
+
+    public void ResetJumpScore()
+    {
+        jumpScore = 0f;
+        jumpMultiplier = 1;
+        if (DidResetJumpScore != null) DidResetJumpScore.Invoke();
     }
 
     public int GetTotalScore()
     {
         return Mathf.FloorToInt(totalScore);
+    }
+
+    public int GetJumpScore()
+    {
+        return Mathf.FloorToInt(jumpScore);
+    }
+
+    public int GetJumpMultiplier()
+    {
+        return jumpMultiplier;
     }
 }

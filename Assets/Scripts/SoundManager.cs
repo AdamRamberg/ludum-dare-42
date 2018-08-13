@@ -124,6 +124,11 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public void PlayFX(string name)
+    {
+        PlayFX(name, null);
+    }
+
     public void StopFX(AudioSource source = null)
     {
         if (source == null)

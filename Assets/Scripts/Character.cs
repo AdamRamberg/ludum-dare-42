@@ -38,9 +38,17 @@ public class Character : MonoBehaviour
 
     public ScoreManager scoreManager;
 
+    private float rotationThisJump = 0f;
+    private float rotationLastFrame = 0f;
+
     private const string SPRITE = "Sprite";
     private const string STATE = "State";
     private const string _Y_POSITION = "_YPosition";
+    private const string JUMP = "Jump";
+    private const string RUNNING = "Running";
+    private const string LANDING = "Landing";
+    private const string DIE = "Die";
+    private const string AIR = "Air";
 
     void Start()
     {
@@ -74,6 +82,14 @@ public class Character : MonoBehaviour
         {
             gameState.Value = GameStateConstants.PLAYING_JUMPING;
         }
+        else if (CharacterStateUtils.IsFalling(state.Value))
+        {
+            gameState.Value = GameStateConstants.PLAYING_FALLING;
+        }
+        else if (CharacterStateUtils.HasLanded(state.Value))
+        {
+            gameState.Value = GameStateConstants.PLAYING_LANDED;
+        }
         else
         {
             gameState.Value = GameStateConstants.PLAYING;
@@ -94,31 +110,31 @@ public class Character : MonoBehaviour
             state.Value = CharacterState.Running;
         }
 
-        if (state.Value == CharacterState.Running)
+        if (state.Value == CharacterState.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
+        {
+            SoundManager.instance.PlayFX(JUMP);
+            state.Value = CharacterState.PreJumping;
+            actionsNextFixedUpdate.Add(DoPreJump);
+            StartCoroutine(DelayAndJump());
+
+            percentJumpAreaReached = (transform.position.x - (jumpingTriggerTransform.position.x - jumpingTriggerTransform.localScale.x / 2)) / jumpingTriggerTransform.localScale.x;
+        }
+        else if (state.Value == CharacterState.Running)
         {
             if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
             {
-                SoundManager.instance.PlayFX("Running");
+                SoundManager.instance.PlayFX(RUNNING);
                 actionsNextFixedUpdate.Add(AddRunSpeed);
                 lastKey = KeyCode.LeftArrow;
                 smoke.Play();
             }
             else if ((lastKey == KeyCode.None || lastKey == KeyCode.LeftArrow) && Input.GetKeyDown(KeyCode.RightArrow))
             {
-                SoundManager.instance.PlayFX("Running");
+                SoundManager.instance.PlayFX(RUNNING);
                 actionsNextFixedUpdate.Add(AddRunSpeed);
                 lastKey = KeyCode.RightArrow;
                 smoke.Play();
             }
-        }
-        else if (state.Value == CharacterState.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
-        {
-            SoundManager.instance.PlayFX("Jump");
-            state.Value = CharacterState.PreJumping;
-            actionsNextFixedUpdate.Add(DoPreJump);
-            StartCoroutine(DelayAndJump());
-
-            percentJumpAreaReached = (transform.position.x - (jumpingTriggerTransform.position.x - jumpingTriggerTransform.localScale.x / 2)) / jumpingTriggerTransform.localScale.x;
         }
         else if (state.Value == CharacterState.Falling)
         {
@@ -131,9 +147,36 @@ public class Character : MonoBehaviour
                 actionsNextFixedUpdate.Add(AddTorqueNForceFallingRight);
             }
 
-            scoreManager.AddWhenInAir(Time.deltaTime);
+            CountRotation();
+
+            scoreManager.AddWhenFalling(Time.deltaTime);
         }
     }
+
+    void CountRotation()
+    {
+        float diff = 0f;
+        if (rotationLastFrame > 340f && transform.rotation.eulerAngles.z < 20f)
+        {
+            diff = (360f - rotationLastFrame) + transform.rotation.eulerAngles.z;
+        }
+        else if (rotationLastFrame < 20f && transform.rotation.eulerAngles.z > 340f)
+        {
+            diff = -rotationLastFrame - (360f - transform.rotation.eulerAngles.z);
+        }
+        else
+        {
+            diff = transform.rotation.eulerAngles.z - rotationLastFrame;
+        }
+        rotationThisJump += diff;
+        rotationLastFrame = transform.rotation.eulerAngles.z;
+
+        var rotation = Mathf.Abs(rotationThisJump) / 360f;
+        var numRotations = Mathf.FloorToInt(rotation);
+
+        scoreManager.jumpMultiplier = numRotations + 1 > scoreManager.jumpMultiplier ? numRotations + 1 : scoreManager.jumpMultiplier;
+    }
+
 
     void FixedUpdate()
     {
@@ -152,7 +195,7 @@ public class Character : MonoBehaviour
 
     void DoJump()
     {
-        SoundManager.instance.PlayFX("Air");
+        SoundManager.instance.PlayFX(AIR);
         // if between 0 and 0.6 => linear percent between 1 and 0.05
         // else if more than 0.6 => linear percent between 0.05 and -0.05
         // #mathgenius #mensa
@@ -223,7 +266,7 @@ public class Character : MonoBehaviour
 
             if (collision.gameObject.tag == TagConstants.MATTRESS)
             {
-                SoundManager.instance.PlayFX("Landing");
+                SoundManager.instance.PlayFX(LANDING);
                 scoreManager.DidLandOnMattress();
                 state.Value = CharacterState.Landed;
                 StartCoroutine(LandedOnMattress());
@@ -247,6 +290,9 @@ public class Character : MonoBehaviour
         transform.rotation = Quaternion.identity;
         state.Value = CharacterState.Idle;
         rb.velocity = Vector2.zero;
+        rotationThisJump = 0f;
+        rotationLastFrame = 0f;
+        scoreManager.AddJumpScoreToTotal();
     }
 
     void DoPreJump()
@@ -278,7 +324,7 @@ public class Character : MonoBehaviour
 
     void Die()
     {
-        SoundManager.instance.PlayFX("Die");
+        SoundManager.instance.PlayFX(DIE);
         blood.Emit(300);
         spriteRenderer.enabled = false;
 
