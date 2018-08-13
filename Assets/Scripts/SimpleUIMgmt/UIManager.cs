@@ -71,6 +71,8 @@ public class UIManager : MonoBehaviour
     {
         for (int i = 0; i < uiPanels.Count; ++i)
         {
+            if (uiPanels[i] == null) continue;
+
             if (coroutineDict.ContainsKey(uiPanels[i].panelName) && coroutineDict[uiPanels[i].panelName] != null)
                 StopCoroutine(coroutineDict[uiPanels[i].panelName]);
             coroutineDict[uiPanels[i].panelName] = StartCoroutine(FadeAlphaTransition(uiPanels[i].activeOnState.Contains(uiState.Value), uiPanels[i].transform, uiPanelUntilChecks[i]));
@@ -139,6 +141,14 @@ public class UIManager : MonoBehaviour
         if (text != null)
         {
             Color c = text.color;
+
+            if (component.instantTransition)
+            {
+                c.a = component.maxAlpha;
+                text.color = c;
+                return true;
+            }
+
             c.a = increaseAlpha ? c.a + changeAmount : c.a - changeAmount;
 
             if (increaseAlpha && c.a > component.maxAlpha)
@@ -154,6 +164,14 @@ public class UIManager : MonoBehaviour
         if (img != null)
         {
             Color c = img.color;
+
+            if (component.instantTransition)
+            {
+                c.a = component.maxAlpha;
+                img.color = c;
+                return true;
+            }
+
             c.a = increaseAlpha ? c.a + changeAmount : c.a - changeAmount;
 
             if (increaseAlpha && c.a > component.maxAlpha)

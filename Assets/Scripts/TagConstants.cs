@@ -1,8 +1,8 @@
 public static class TagConstants
 {
-    public static string POLE = "Pole";
-    public static string JUMPING_TRIGGER = "JumpingTrigger";
-    public static string MATTRESS = "Mattress";
-    public static string FLOOR = "Floor";
-    public static string HINDER = "Hinder";
+    public const string POLE = "Pole";
+    public const string JUMPING_TRIGGER = "JumpingTrigger";
+    public const string MATTRESS = "Mattress";
+    public const string FLOOR = "Floor";
+    public const string HINDER = "Hinder";
 }

@@ -64,11 +64,20 @@ public class Character : MonoBehaviour
         {
             gameState.Value = GameStateConstants.PLAYING_RUNNING;
         }
-        else if (gameState.Value == GameStateConstants.PLAYING_RUNNING)
+        else if (CharacterStateUtils.IsJumping(state.Value))
+        {
+            gameState.Value = GameStateConstants.PLAYING_JUMPING;
+        }
+        else
         {
             gameState.Value = GameStateConstants.PLAYING;
         }
     }
+
+    // void SetJumpingGameState(bool jumping)
+    // {
+    //     gameState.Value = jumping ? GameStateConstants.PLAYING_JUMPING : GameStateConstants.PLAYING;
+    // }
 
     void Update()
     {
