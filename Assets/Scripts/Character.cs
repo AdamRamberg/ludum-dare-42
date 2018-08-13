@@ -37,13 +37,17 @@ public class Character : MonoBehaviour
     private Animator animator;
 
     private const string SPRITE = "Sprite";
+    private const string STATE = "State";
+    private const string _Y_POSITION = "_YPosition";
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponentInChildren<Animator>();
         spriteRenderer = transform.Find(SPRITE).GetComponent<SpriteRenderer>();
+
         Reset();
+
         state.Changed += SetGameStateBasedOnCharState;
         gameState.Changed += SetGameStateBasedOnCharState;
     }
@@ -74,17 +78,12 @@ public class Character : MonoBehaviour
         }
     }
 
-    // void SetJumpingGameState(bool jumping)
-    // {
-    //     gameState.Value = jumping ? GameStateConstants.PLAYING_JUMPING : GameStateConstants.PLAYING;
-    // }
-
     void Update()
     {
         if (!GameStateUtils.IsPlaying(gameState)) return;
 
-        animator.SetInteger("State", (int)state.Value);
-        Shader.SetGlobalFloat("_YPosition", this.transform.position.y * 0.03f);
+        animator.SetInteger(STATE, (int)state.Value);
+        Shader.SetGlobalFloat(_Y_POSITION, this.transform.position.y * 0.03f);
         rb.gravityScale = rb.velocity.y < -1f ? 3.5f : 1f;
 
         // For animation
@@ -210,6 +209,10 @@ public class Character : MonoBehaviour
         {
             smoke.Play();
             Camera.main.GetComponent<CameraShake>().Shake(0.3f);
+
+            // Prevent character from moving sideways when landing
+            actionsNextFixedUpdate.Add(StopXVelocity);
+
             if (collision.gameObject.tag == TagConstants.MATTRESS)
             {
                 state.Value = CharacterState.Landed;
@@ -220,6 +223,11 @@ public class Character : MonoBehaviour
                 Die();
             }
         }
+    }
+
+    private void StopXVelocity()
+    {
+        rb.velocity = new Vector2(0f, rb.velocity.y);
     }
 
     public void Reset()
