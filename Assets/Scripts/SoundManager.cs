@@ -42,7 +42,7 @@ public class SoundManager : MonoBehaviour
 
         backgroundSoundSource.clip = gameMusic;
 
-        int playerMusic = PlayerPrefs.GetInt("SoundManager_MusicOn", 1);
+        int playerMusic = 1;//PlayerPrefs.GetInt("SoundManager_MusicOn", 1);
         if (playMusicAtStart && playerMusic == 1)
         {
             TurnOnAllSound(true);

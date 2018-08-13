@@ -98,12 +98,14 @@ public class Character : MonoBehaviour
         {
             if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
             {
+                SoundManager.instance.PlayFX("Running");
                 actionsNextFixedUpdate.Add(AddRunSpeed);
                 lastKey = KeyCode.LeftArrow;
                 smoke.Play();
             }
             else if ((lastKey == KeyCode.None || lastKey == KeyCode.LeftArrow) && Input.GetKeyDown(KeyCode.RightArrow))
             {
+                SoundManager.instance.PlayFX("Running");
                 actionsNextFixedUpdate.Add(AddRunSpeed);
                 lastKey = KeyCode.RightArrow;
                 smoke.Play();
@@ -111,6 +113,7 @@ public class Character : MonoBehaviour
         }
         else if (state.Value == CharacterState.CanJump && Input.GetKeyDown(KeyCode.Space) && jumpingTriggerTransform != null)
         {
+            SoundManager.instance.PlayFX("Jump");
             state.Value = CharacterState.PreJumping;
             actionsNextFixedUpdate.Add(DoPreJump);
             StartCoroutine(DelayAndJump());
@@ -149,6 +152,7 @@ public class Character : MonoBehaviour
 
     void DoJump()
     {
+        SoundManager.instance.PlayFX("Air");
         // if between 0 and 0.6 => linear percent between 1 and 0.05
         // else if more than 0.6 => linear percent between 0.05 and -0.05
         // #mathgenius #mensa
@@ -219,6 +223,7 @@ public class Character : MonoBehaviour
 
             if (collision.gameObject.tag == TagConstants.MATTRESS)
             {
+                SoundManager.instance.PlayFX("Landing");
                 scoreManager.DidLandOnMattress();
                 state.Value = CharacterState.Landed;
                 StartCoroutine(LandedOnMattress());
@@ -273,6 +278,7 @@ public class Character : MonoBehaviour
 
     void Die()
     {
+        SoundManager.instance.PlayFX("Die");
         blood.Emit(300);
         spriteRenderer.enabled = false;
 
