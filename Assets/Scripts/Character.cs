@@ -119,7 +119,7 @@ public class Character : MonoBehaviour
 
             percentJumpAreaReached = (transform.position.x - (jumpingTriggerTransform.position.x - jumpingTriggerTransform.localScale.x / 2)) / jumpingTriggerTransform.localScale.x;
         }
-        else if (state.Value == CharacterState.Running)
+        else if (state.Value == CharacterState.Running || state.Value == CharacterState.CanJump)
         {
             if ((lastKey == KeyCode.None || lastKey == KeyCode.RightArrow) && Input.GetKeyDown(KeyCode.LeftArrow))
             {
