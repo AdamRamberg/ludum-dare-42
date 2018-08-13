@@ -1,29 +1,35 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
+using ScriptableObjectVariables;
 
 public class SpriteScript : MonoBehaviour
 {
-    private Character character;
+    public FloatVariable characterPreJumpTime;
+    public FloatVariable rotation;
+    public CharacterStateVariable characterState;
 
     void Start()
     {
-        character = transform.parent.GetComponent<Character>();
+        characterState.Changed += RotateOnPreJump;
     }
 
-    void Update()
+    private void OnDestroy()
     {
-        if (character.state.Value == CharacterState.PreJumping)
+        characterState.Changed -= RotateOnPreJump;
+    }
+
+    void RotateOnPreJump(CharacterState state)
+    {
+        if (state == CharacterState.PreJumping)
         {
-            transform.Rotate(new Vector3(0f, 0f, 2f));
+            transform.DORotate(new Vector3(0f, 0f, rotation.Value), characterPreJumpTime.Value / 2).OnComplete(CreateTweenBack);
         }
-        else if (transform.localRotation != Quaternion.identity)
-        {
-            // Debug.Log(123);
-            // var rot = transform.rotation;
-            // rot.eulerAngles = Vector3.zero;
-            // transform.rotation = rot;
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.identity, Time.time * 0.1f);
-        }
+    }
+
+    void CreateTweenBack()
+    {
+        transform.DORotate(new Vector3(0f, 0f, 0f), characterPreJumpTime.Value / 2);
     }
 }
