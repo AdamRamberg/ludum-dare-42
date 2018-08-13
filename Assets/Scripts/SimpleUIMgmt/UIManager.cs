@@ -35,7 +35,8 @@ public class UIManager : MonoBehaviour
 
         for (int i = 0; i < uiPanels.Count; ++i)
         {
-            uiPanelUntilChecks.Add((t) => IsUIPanel(t) && t.GetInstanceID() != uiPanels[i].transform.GetInstanceID());
+            var localIndex = i; // See reason: https://netmatze.wordpress.com/2012/05/11/using-loop-variables-in-lambda-expressions-in-c-5/
+            uiPanelUntilChecks.Add((t) => IsUIPanel(t) && t.GetComponent<UIPanel>().panelName != uiPanels[localIndex].panelName);
             coroutineDict.Add(uiPanels[i].panelName, null);
         }
     }
@@ -78,7 +79,7 @@ public class UIManager : MonoBehaviour
 
     private bool IsUIPanel(Transform trans)
     {
-        return trans.GetComponent<UIComponent>() != null;
+        return trans.GetComponent<UIPanel>() != null;
     }
 
     private void InitUI()

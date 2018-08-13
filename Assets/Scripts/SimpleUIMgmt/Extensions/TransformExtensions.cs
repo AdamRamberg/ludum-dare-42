@@ -39,7 +39,7 @@ public static class TransformExtensions
 
         foreach (Transform child in current)
         {
-            child.TraverseAndExecute(action);
+            child.TraverseAndExecute(action, until);
         }
     }
 
@@ -57,7 +57,7 @@ public static class TransformExtensions
 
         foreach (Transform child in current)
         {
-            var temp = child.TraverseExecuteAndCheck(func);
+            var temp = child.TraverseExecuteAndCheck(func, until);
             if (!temp)
                 ret = false;
         }
