@@ -36,6 +36,8 @@ public class Character : MonoBehaviour
 
     private Animator animator;
 
+    public ScoreManager scoreManager;
+
     private const string SPRITE = "Sprite";
     private const string STATE = "State";
     private const string _Y_POSITION = "_YPosition";
@@ -125,6 +127,8 @@ public class Character : MonoBehaviour
             {
                 actionsNextFixedUpdate.Add(AddTorqueNForceFallingRight);
             }
+
+            scoreManager.AddWhenInAir(Time.deltaTime);
         }
     }
 
@@ -179,8 +183,8 @@ public class Character : MonoBehaviour
             jumpingTriggerTransform = collider.transform;
             state.Value = CharacterState.CanJump;
         }
-        else if ((collider.tag == TagConstants.POLE && collider.transform.parent == null)
-            || collider.tag == TagConstants.HINDER)
+        else if ((state.Value != CharacterState.Running && (collider.tag == TagConstants.POLE && collider.transform.parent == null)
+            || collider.tag == TagConstants.HINDER))
         {
             Die();
         }
@@ -215,6 +219,7 @@ public class Character : MonoBehaviour
 
             if (collision.gameObject.tag == TagConstants.MATTRESS)
             {
+                scoreManager.DidLandOnMattress();
                 state.Value = CharacterState.Landed;
                 StartCoroutine(LandedOnMattress());
             }
@@ -236,6 +241,7 @@ public class Character : MonoBehaviour
         transform.position = Vector3.zero;
         transform.rotation = Quaternion.identity;
         state.Value = CharacterState.Idle;
+        rb.velocity = Vector2.zero;
     }
 
     void DoPreJump()
