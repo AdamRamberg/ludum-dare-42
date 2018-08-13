@@ -7,6 +7,19 @@ using ScriptableObjectVariables;
 
 public class Character : MonoBehaviour
 {
+    public enum CharacterState
+    {
+        Idle,
+        Running,
+        CanJump,
+        PreJumping,
+        Jumping,
+
+        Falling,
+        Landed,
+        Dead
+    };
+
     private Rigidbody2D rb;
     public ParticleSystem smoke;
     public ParticleSystem blood;

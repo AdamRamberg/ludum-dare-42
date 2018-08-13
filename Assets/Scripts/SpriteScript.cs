@@ -20,9 +20,9 @@ public class SpriteScript : MonoBehaviour
         characterState.Changed -= RotateOnPreJump;
     }
 
-    void RotateOnPreJump(CharacterState state)
+    void RotateOnPreJump(Character.CharacterState state)
     {
-        if (state == CharacterState.PreJumping)
+        if (state == Character.CharacterState.PreJumping)
         {
             transform.DORotate(new Vector3(0f, 0f, rotation.Value), characterPreJumpTime.Value / 2).OnComplete(CreateTweenBack);
         }

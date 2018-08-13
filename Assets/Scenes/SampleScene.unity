@@ -710,6 +710,18 @@ Prefab:
       propertyPath: didDie.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
       objectReference: {fileID: 843378246}
+    - target: {fileID: 114684412728411718, guid: e09869b18bb3f4338bc40de2dcae6ac9,
+        type: 2}
+      propertyPath: state
+      value: 
+      objectReference: {fileID: 11400000, guid: 34c7e275033dd4f378c776467ff2f8d1,
+        type: 2}
+    - target: {fileID: 114572246499651468, guid: e09869b18bb3f4338bc40de2dcae6ac9,
+        type: 2}
+      propertyPath: characterState
+      value: 
+      objectReference: {fileID: 11400000, guid: 34c7e275033dd4f378c776467ff2f8d1,
+        type: 2}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e09869b18bb3f4338bc40de2dcae6ac9, type: 2}
   m_IsPrefabParent: 0

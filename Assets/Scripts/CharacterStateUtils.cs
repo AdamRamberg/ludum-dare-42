@@ -8,17 +8,17 @@ public static class CharacterStateUtils
     private const string JUMP = "Jump";
     private const string LANDED = "Landed";
     private const string FALLING = "Falling";
-    public static bool IsJumping(CharacterState state)
+    public static bool IsJumping(Character.CharacterState state)
     {
         return state.ToString().Contains(JUMP);
     }
 
-    public static bool IsFalling(CharacterState state)
+    public static bool IsFalling(Character.CharacterState state)
     {
         return state.ToString().Equals(FALLING);
     }
 
-    public static bool HasLanded(CharacterState state)
+    public static bool HasLanded(Character.CharacterState state)
     {
         return state.ToString().Equals(LANDED);
     }

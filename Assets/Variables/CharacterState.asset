@@ -8,9 +8,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: f5a26fb89f1ea4bf0846ac233dd6433a, type: 3}
   m_Name: CharacterState
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterStateVariable
+  m_EditorClassIdentifier: 
   DeveloperDescription: 
   value: 0
   previousValue: 0

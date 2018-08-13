@@ -26,7 +26,7 @@ public class Pole : MonoBehaviour
     {
         if (transform.parent == null) return;
 
-        if (character.state.Value == CharacterState.PreJumping)
+        if (character.state.Value == Character.CharacterState.PreJumping)
         {
             var v = lineRenderer.GetPosition(1);
             v.y = -character.GetDistanceToFloor();
