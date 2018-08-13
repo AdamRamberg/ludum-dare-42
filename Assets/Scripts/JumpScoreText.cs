@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
+using ScriptableObjectVariables;
 
 public class JumpScoreText : MonoBehaviour
 {
@@ -9,14 +11,21 @@ public class JumpScoreText : MonoBehaviour
     private float jumpScoreLastFrame = 0f;
     private int jumpMultiplierLastFrame = 0;
 
+    public FloatVariable pulseTargetScale;
+    public FloatVariable pulseDuration;
+
+    float scaleBeforePulse = 0f;
+
     void Start()
     {
         scoreManager.DidResetJumpScore += Reset;
+        scoreManager.DidSetMultiplier += Pulse;
     }
 
     private void OnDestroy()
     {
         scoreManager.DidResetJumpScore -= Reset;
+        scoreManager.DidSetMultiplier -= Pulse;
     }
 
     void Reset()
@@ -39,6 +48,12 @@ public class JumpScoreText : MonoBehaviour
 
     public void Pulse()
     {
+        scaleBeforePulse = transform.localScale.x;
+        transform.DOScale(pulseTargetScale.Value, pulseDuration.Value / 2f).OnComplete(PulseBack);
+    }
 
+    void PulseBack()
+    {
+        transform.DOScale(scaleBeforePulse, pulseDuration.Value / 2f);
     }
 }

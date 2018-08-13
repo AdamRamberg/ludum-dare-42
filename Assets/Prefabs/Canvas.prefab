@@ -1975,6 +1975,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scoreManager: {fileID: 11400000, guid: 0dde3298d78ab45a5bc25088d36cb8cc, type: 2}
+  pulseTargetScale: {fileID: 11400000, guid: 0d2aaab261f3343cdbccabe73f2b0f3b, type: 2}
+  pulseDuration: {fileID: 11400000, guid: 6a721c70bb5d4445dacfc3603bd3d59e, type: 2}
 --- !u!114 &114644667423424572
 MonoBehaviour:
   m_ObjectHideFlags: 1

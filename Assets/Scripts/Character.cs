@@ -174,7 +174,11 @@ public class Character : MonoBehaviour
         var rotation = Mathf.Abs(rotationThisJump) / 360f;
         var numRotations = Mathf.FloorToInt(rotation);
 
-        scoreManager.jumpMultiplier = numRotations + 1 > scoreManager.jumpMultiplier ? numRotations + 1 : scoreManager.jumpMultiplier;
+        var jumpMultiplier = scoreManager.GetJumpMultiplier();
+        if (numRotations + 1 > jumpMultiplier)
+        {
+            scoreManager.SetMultiplier(numRotations + 1);
+        }
     }
 
 

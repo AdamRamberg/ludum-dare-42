@@ -14,6 +14,9 @@ public class ScoreManager : ScriptableObject
 
     public Action DidResetJumpScore;
 
+    public Action DidSetMultiplier;
+
+
     public void AddWhenFalling(float deltaTime)
     {
         jumpScore += deltaTime * 100f;
@@ -64,5 +67,14 @@ public class ScoreManager : ScriptableObject
     public int GetJumpMultiplier()
     {
         return jumpMultiplier;
+    }
+
+    public void SetMultiplier(int value)
+    {
+        if (jumpMultiplier != value)
+        {
+            jumpMultiplier = value;
+            if (DidSetMultiplier != null) DidSetMultiplier.Invoke();
+        }
     }
 }
